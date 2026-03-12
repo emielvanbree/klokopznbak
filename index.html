@@ -123,6 +123,12 @@ canvas#bg {
   box-shadow: 0 4px 20px rgba(200,200,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
   border: 1.5px solid rgba(220,220,0,0.35);
 }
+.game-btn.doolhof {
+  background: linear-gradient(135deg, #0e1a2a 0%, #060e1a 100%);
+  box-shadow: 0 4px 20px rgba(0,140,255,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(60,160,255,0.35);
+}
+.game-btn.doolhof .title { color: #60c8ff; }
 
 .game-btn .icon {
   font-size: clamp(24px, 6.5vw, 38px);
@@ -246,6 +252,47 @@ canvas#bg {
   padding-bottom: env(safe-area-inset-bottom, 4px);
 }
 
+/* ── SOCIALS ────────────────────────────────────── */
+.socials {
+  display: flex;
+  gap: clamp(14px, 4vw, 22px);
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(38px, 10vw, 48px);
+  height: clamp(38px, 10vw, 48px);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.12s, box-shadow 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.social-link:active { transform: scale(0.9); }
+.social-link.spotify {
+  background: linear-gradient(135deg, #1a2e1a, #0d1a0d);
+  border: 1.5px solid rgba(30,215,96,0.4);
+  box-shadow: 0 3px 14px rgba(30,215,96,0.2);
+}
+.social-link.instagram {
+  background: linear-gradient(135deg, #2a1020, #1a0814);
+  border: 1.5px solid rgba(225,48,108,0.4);
+  box-shadow: 0 3px 14px rgba(225,48,108,0.2);
+}
+.social-link.facebook {
+  background: linear-gradient(135deg, #0e1a2e, #060e1c);
+  border: 1.5px solid rgba(24,119,242,0.4);
+  box-shadow: 0 3px 14px rgba(24,119,242,0.2);
+}
+.social-link svg {
+  width: clamp(20px, 5.5vw, 26px);
+  height: clamp(20px, 5.5vw, 26px);
+}
+
 /* ── SHORT SCREENS: shrink logo ─────────────────── */
 @media (max-height: 640px) {
   .logo-main { font-size: clamp(28px, 9vw, 54px); }
@@ -275,6 +322,15 @@ canvas#bg {
       <div class="info">
         <div class="title">Blikkie Smijten</div>
         <div class="desc">Mik de klok op z'n bak</div>
+      </div>
+      <span class="arrow">▶</span>
+    </button>
+
+    <button class="game-btn doolhof" onclick="openDoolhof()">
+      <span class="icon">🏅</span>
+      <div class="info">
+        <div class="title">Dick's Doolhof</div>
+        <div class="desc">Rij door het doolhof en pak het sixpack</div>
       </div>
       <span class="arrow">▶</span>
     </button>
@@ -325,6 +381,37 @@ canvas#bg {
     </div>
   </div>
 
+  <div class="socials">
+    <!-- Spotify -->
+    <a class="social-link spotify" href="https://open.spotify.com/artist/4RgGMYgBNcxoq7Wpz2XS3H?si=esus7eP_SkmmWtzsc4s2OQ" target="_blank" rel="noopener" title="Dick Stoter op Spotify">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="11" fill="#1ed760" opacity="0.15"/>
+        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 0 1-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 1 1-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.622.622 0 0 1 .207.857zm1.224-2.724a.78.78 0 0 1-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 1 1-.453-1.492c3.633-1.102 8.147-.568 11.233 1.329a.78.78 0 0 1 .257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.937.937 0 1 1-.543-1.793c3.563-1.08 9.484-.87 13.22 1.37a.937.937 0 0 1-.959 1.578z" fill="#1ed760"/>
+      </svg>
+    </a>
+    <!-- Instagram -->
+    <a class="social-link instagram" href="https://www.instagram.com/dickstoter026/" target="_blank" rel="noopener" title="Dick Stoter op Instagram">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f09433"/>
+            <stop offset="25%" stop-color="#e6683c"/>
+            <stop offset="50%" stop-color="#dc2743"/>
+            <stop offset="75%" stop-color="#cc2366"/>
+            <stop offset="100%" stop-color="#bc1888"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" fill="url(#ig-grad)"/>
+      </svg>
+    </a>
+    <!-- Facebook -->
+    <a class="social-link facebook" href="https://www.facebook.com/profile.php?id=61588332776492" target="_blank" rel="noopener" title="Dick Stoter op Facebook">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" fill="#1877f2"/>
+      </svg>
+    </a>
+  </div>
+
   <div class="version">Dick-O-lympics v1.0 · Arnhem 2026</div>
 </div>
 
@@ -336,6 +423,7 @@ canvas#bg {
 function openBlikkie() { window.location.href = 'klokopznbak.html'; }
 function openBlikkentikken() { window.location.href = 'blikkentikken.html'; }
 function openScooter() { window.location.href = 'stoterscooter.html'; }
+function openDoolhof() { window.location.href = 'dicksdoolhof.html'; }
 function openDick() {
   const overlay = document.createElement('div');
   overlay.id = 'dick-popup';
