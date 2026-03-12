@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0b14">
+<title>Dick-O-lympics</title>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width:100%; height:100%;
+  background:#0d0b14;
+  overflow:hidden;
+  font-family:'Arial Black', Arial, sans-serif;
+  /* iOS safe area */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+canvas#bg {
+  position:fixed; top:0; left:0;
+  width:100%; height:100%; z-index:0;
+  pointer-events:none;
+}
+
+/* ── LAYOUT ─────────────────────────────────────── */
+.ui {
+  position:fixed; inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:1;
+  padding: clamp(12px, 4vw, 32px) clamp(12px, 5vw, 24px);
+  gap: clamp(16px, 3vh, 28px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── LOGO ───────────────────────────────────────── */
+.logo {
+  text-align:center;
+  flex-shrink:0;
+  line-height:1.05;
+}
+.logo-top {
+  font-size: clamp(11px, 3vw, 17px);
+  color: rgba(255,220,80,0.75);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(255,180,0,0.4);
+  margin-bottom: 4px;
+}
+.logo-main {
+  font-size: clamp(36px, 10.5vw, 80px);
+  color: #ffd700;
+  text-shadow:
+    0 0 22px rgba(255,200,0,0.6),
+    2px 2px 0 #7a4000,
+    4px 4px 0 rgba(0,0,0,0.4);
+  letter-spacing: 0.02em;
+  /* Prevent overflow on very narrow phones */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  max-width: 100%;
+}
+.logo-sub {
+  font-size: clamp(11px, 2.8vw, 16px);
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+}
+
+/* ── BUTTONS ────────────────────────────────────── */
+.btn-row {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: clamp(10px, 2vh, 16px);
+  width: min(400px, 92vw);
+  flex-shrink:0;
+}
+
+.game-btn {
+  width: 100%;
+  padding: clamp(13px, 2.8vh, 20px) clamp(14px, 3vw, 22px);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  display:flex;
+  align-items:center;
+  gap: clamp(12px, 3vw, 18px);
+  text-align:left;
+  position:relative;
+  overflow:hidden;
+  transition: transform 0.12s, box-shadow 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.game-btn:active { transform: scale(0.96); }
+
+.game-btn.blikkie {
+  background: linear-gradient(135deg, #1a3a1a 0%, #0e2a0e 100%);
+  box-shadow: 0 4px 20px rgba(0,180,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(0,200,60,0.35);
+}
+.game-btn.scooter {
+  background: linear-gradient(135deg, #2a1a0e 0%, #1a0e06 100%);
+  box-shadow: 0 4px 20px rgba(220,120,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,160,0,0.35);
+}
+.game-btn.dick {
+  background: linear-gradient(135deg, #2a0e1a 0%, #1a0610 100%);
+  box-shadow: 0 4px 20px rgba(200,0,100,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(220,60,120,0.35);
+}
+.game-btn.tikken {
+  background: linear-gradient(135deg, #1a1a0e 0%, #0e0e06 100%);
+  box-shadow: 0 4px 20px rgba(200,200,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(220,220,0,0.35);
+}
+.game-btn.doolhof {
+  background: linear-gradient(135deg, #0e1a2a 0%, #060e1a 100%);
+  box-shadow: 0 4px 20px rgba(0,140,255,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(60,160,255,0.35);
+}
+.game-btn.doolhof .title { color: #60c8ff; }
+
+.game-btn .icon {
+  font-size: clamp(24px, 6.5vw, 38px);
+  flex-shrink:0;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+  line-height:1;
+}
+.game-btn .info { flex:1; min-width:0; }
+.game-btn .title {
+  font-size: clamp(14px, 4.2vw, 21px);
+  font-weight:900;
+  line-height:1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-btn.blikkie .title { color: #44ee66; }
+.game-btn.scooter .title { color: #ffaa33; }
+.game-btn.dick    .title { color: #ff6eb0; }
+.game-btn.tikken  .title { color: #eeff44; }
+
+.game-btn .desc {
+  font-size: clamp(10px, 2.4vw, 13px);
+  color: rgba(255,255,255,0.48);
+  margin-top: 2px;
+  font-family: Arial, sans-serif;
+  font-weight:normal;
+  line-height:1.3;
+}
+.game-btn .arrow {
+  font-size: clamp(14px, 3.5vw, 20px);
+  color: rgba(255,255,255,0.3);
+  flex-shrink:0;
+}
+
+/* ── MUSIC BAR ──────────────────────────────────── */
+.music-bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(5px, 1.5vw, 10px);
+  background: rgba(10,8,20,0.85);
+  border: 1px solid rgba(255,200,80,0.2);
+  border-radius: 40px;
+  padding: clamp(8px, 1.8vh, 12px) clamp(12px, 3vw, 20px);
+  width: min(400px, 92vw);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  justify-content: space-between;
+  flex-shrink:0;
+}
+
+.music-btn {
+  background: rgba(255,220,80,0.13);
+  border: 1px solid rgba(255,200,60,0.28);
+  color: #ffd700;
+  cursor: pointer;
+  font-size: clamp(12px, 3.2vw, 16px);
+  font-weight: bold;
+  line-height: 1;
+  padding: clamp(5px, 1.2vw, 8px) clamp(7px, 1.8vw, 11px);
+  border-radius: 8px;
+  transition: transform 0.1s, background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-width: clamp(30px, 8vw, 38px);
+  min-height: 36px;
+  text-align: center;
+  flex-shrink:0;
+}
+.music-btn:hover  { background: rgba(255,220,80,0.22); }
+.music-btn:active { transform: scale(0.88); }
+
+.music-label {
+  font-size: clamp(9px, 2.2vw, 12px);
+  color: rgba(255,220,80,0.65);
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+  font-family: Arial, sans-serif;
+}
+
+.vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: clamp(50px, 12vw, 80px);
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,200,80,0.25);
+  outline: none;
+  cursor: pointer;
+  flex-shrink:0;
+}
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #ffd700;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(255,200,0,0.5);
+}
+.vol-slider::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #ffd700;
+  border: none;
+  cursor: pointer;
+}
+
+/* ── VERSION ────────────────────────────────────── */
+.version {
+  font-size: clamp(9px, 2vw, 11px);
+  color: rgba(255,255,255,0.18);
+  font-family: Arial, sans-serif;
+  font-weight:normal;
+  letter-spacing:0.06em;
+  flex-shrink:0;
+  padding-bottom: env(safe-area-inset-bottom, 4px);
+}
+
+/* ── SOCIALS ────────────────────────────────────── */
+.socials {
+  display: flex;
+  gap: clamp(14px, 4vw, 22px);
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(38px, 10vw, 48px);
+  height: clamp(38px, 10vw, 48px);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.12s, box-shadow 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.social-link:active { transform: scale(0.9); }
+.social-link.spotify {
+  background: linear-gradient(135deg, #1a2e1a, #0d1a0d);
+  border: 1.5px solid rgba(30,215,96,0.4);
+  box-shadow: 0 3px 14px rgba(30,215,96,0.2);
+}
+.social-link.instagram {
+  background: linear-gradient(135deg, #2a1020, #1a0814);
+  border: 1.5px solid rgba(225,48,108,0.4);
+  box-shadow: 0 3px 14px rgba(225,48,108,0.2);
+}
+.social-link.facebook {
+  background: linear-gradient(135deg, #0e1a2e, #060e1c);
+  border: 1.5px solid rgba(24,119,242,0.4);
+  box-shadow: 0 3px 14px rgba(24,119,242,0.2);
+}
+.social-link svg {
+  width: clamp(20px, 5.5vw, 26px);
+  height: clamp(20px, 5.5vw, 26px);
+}
+
+/* ── SHORT SCREENS: shrink logo ─────────────────── */
+@media (max-height: 640px) {
+  .logo-main { font-size: clamp(28px, 9vw, 54px); }
+  .logo-sub  { display: none; }
+  .logo      { margin-bottom: 0; }
+  .ui        { gap: clamp(8px, 1.5vh, 14px); }
+}
+@media (max-height: 500px) {
+  .logo-top  { display: none; }
+  .logo-main { font-size: clamp(22px, 7vw, 40px); }
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<div class="ui">
+  <div class="logo">
+    <div class="logo-top">🏅 welkom bij de</div>
+    <div class="logo-main">Dick-O-lympics</div>
+    <div class="logo-sub">de olympische spelen van Arnhem-Zuid</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="game-btn blikkie" onclick="openBlikkie()">
+      <span class="icon">🍺</span>
+      <div class="info">
+        <div class="title">Blikkie Smijten</div>
+        <div class="desc">Mik de klok op z'n bak</div>
+      </div>
+      <span class="arrow">▶</span>
+    </button>
+
+    <button class="game-btn doolhof" onclick="openDoolhof()">
+      <span class="icon">🏅</span>
+      <div class="info">
+        <div class="title">Dick's Doolhof</div>
+        <div class="desc">Rij door het doolhof en pak het sixpack</div>
+      </div>
+      <span class="arrow">▶</span>
+    </button>
+
+    <button class="game-btn tikken" onclick="openBlikkentikken()">
+      <span class="icon">🎯</span>
+      <div class="info">
+        <div class="title">Blikken Tikken</div>
+        <div class="desc">Tik die blikken van de stapel!</div>
+      </div>
+      <span class="arrow">▶</span>
+    </button>
+
+    <button class="game-btn scooter" onclick="openScooter()">
+      <span class="icon">🛵</span>
+      <div class="info">
+        <div class="title">Stoter Scooter</div>
+        <div class="desc">Bier en Beuken op de Arnhemse wegen</div>
+      </div>
+      <span class="arrow">▶</span>
+    </button>
+
+    <button class="game-btn dick" onclick="openDick()">
+      <span class="icon">🍆</span>
+      <div class="info">
+        <div class="title">Lul met Dick</div>
+        <div class="desc">Dick is chagrijnig en geil. Durf jij het gesprek met hem aan?</div>
+      </div>
+      <span class="arrow">▶</span>
+    </button>
+
+    <div class="game-btn" style="background:linear-gradient(135deg,#0e1a2a 0%,#060e1a 100%);border:1.5px solid rgba(60,160,255,0.35);box-shadow:0 4px 20px rgba(0,100,220,0.22),inset 0 1px 0 rgba(255,255,255,0.08);flex-direction:column;gap:10px;padding:clamp(13px,2.8vh,20px) clamp(14px,3vw,22px);">
+      <div style="display:flex;align-items:center;gap:clamp(12px,3vw,18px);width:100%;">
+        <span class="icon">📻</span>
+        <div class="info">
+          <div class="title" style="color:#60c8ff;">Dick Radio</div>
+          <div class="desc" id="musicLabel">♪ laden...</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:clamp(5px,1.5vw,8px);width:100%;">
+        <button class="music-btn" onclick="playPrev()" title="Vorige">&#9664;&#9664;</button>
+        <button class="music-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+        <button class="music-btn" onclick="playNext()" title="Volgende">&#9654;&#9654;</button>
+        <button class="music-btn" onclick="changeVol(-0.15)">−</button>
+        <input class="vol-slider" id="volSlider" type="range" min="0" max="1" step="0.05" value="0.6" oninput="setVol(this.value)" style="flex:1;">
+        <button class="music-btn" onclick="changeVol(0.15)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="socials">
+    <!-- Spotify -->
+    <a class="social-link spotify" href="https://open.spotify.com/artist/4RgGMYgBNcxoq7Wpz2XS3H?si=esus7eP_SkmmWtzsc4s2OQ" target="_blank" rel="noopener" title="Dick Stoter op Spotify">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="11" fill="#1ed760" opacity="0.15"/>
+        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 0 1-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 1 1-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.622.622 0 0 1 .207.857zm1.224-2.724a.78.78 0 0 1-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 1 1-.453-1.492c3.633-1.102 8.147-.568 11.233 1.329a.78.78 0 0 1 .257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.937.937 0 1 1-.543-1.793c3.563-1.08 9.484-.87 13.22 1.37a.937.937 0 0 1-.959 1.578z" fill="#1ed760"/>
+      </svg>
+    </a>
+    <!-- Instagram -->
+    <a class="social-link instagram" href="https://www.instagram.com/dickstoter026/" target="_blank" rel="noopener" title="Dick Stoter op Instagram">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f09433"/>
+            <stop offset="25%" stop-color="#e6683c"/>
+            <stop offset="50%" stop-color="#dc2743"/>
+            <stop offset="75%" stop-color="#cc2366"/>
+            <stop offset="100%" stop-color="#bc1888"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" fill="url(#ig-grad)"/>
+      </svg>
+    </a>
+    <!-- Facebook -->
+    <a class="social-link facebook" href="https://www.facebook.com/profile.php?id=61588332776492" target="_blank" rel="noopener" title="Dick Stoter op Facebook">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" fill="#1877f2"/>
+      </svg>
+    </a>
+  </div>
+
+  <div class="version">Dick-O-lympics v1.0 · Arnhem 2026</div>
+</div>
+
+<!-- Background music -->
+<audio id="bgMusic" preload="auto"></audio>
+
+<!-- Dick popup placeholder -->
+<script>
+function openOverlay(id, src) {
+  const overlay = document.createElement('div');
+  overlay.id = id;
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:9999;display:flex;flex-direction:column;';
+  overlay.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;padding:12px;">
+      <button onclick="document.getElementById('${id}').remove()" style="background:#aa1a08;color:#fff;border:none;font-family:Arial Black,sans-serif;font-size:18px;padding:10px 20px;border-radius:10px;cursor:pointer;">✖ SLUITEN</button>
+    </div>
+    <iframe src="${src}" style="flex:1;border:none;width:100%;" allow="*"></iframe>
+  `;
+  document.body.appendChild(overlay);
+}
+function openBlikkie()       { openOverlay('blikkie-popup',  'klokopznbak.html'); }
+function openBlikkentikken() { openOverlay('tikken-popup',   'blikkentikken.html'); }
+function openScooter()       { openOverlay('scooter-popup',  'stoterscooter.html'); }
+function openDoolhof()       { openOverlay('doolhof-popup',  'dicksdoolhof.html'); }
+function openDick() {
+  const overlay = document.createElement('div');
+  overlay.id = 'dick-popup';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:9999;display:flex;flex-direction:column;';
+  overlay.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;padding:12px;">
+      <button onclick="document.getElementById('dick-popup').remove()" style="background:#aa1a08;color:#fff;border:none;font-family:Arial Black,sans-serif;font-size:18px;padding:10px 20px;border-radius:10px;cursor:pointer;">✖ SLUITEN</button>
+    </div>
+    <iframe src="https://dicksgenerator.vercel.app/" style="flex:1;border:none;width:100%;" allow="*"></iframe>
+  `;
+  document.body.appendChild(overlay);
+}
+</script>
+
+<script>
+
+// ── Animated background ──────────────────────────────────────────────
+const cv = document.getElementById('bg');
+const cx = cv.getContext('2d');
+let W, H, stars=[], t=0;
+
+function resize() {
+  W = cv.width  = window.innerWidth  * devicePixelRatio;
+  H = cv.height = window.innerHeight * devicePixelRatio;
+  cv.style.width  = window.innerWidth  + 'px';
+  cv.style.height = window.innerHeight + 'px';
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Generate stars
+for (let i=0; i<120; i++) {
+  stars.push({
+    x: Math.random(), y: Math.random(),
+    r: Math.random()*1.6+0.3,
+    twinkle: Math.random()*Math.PI*2,
+    speed: Math.random()*0.015+0.005
+  });
+}
+
+function drawBg() {
+  // Sky gradient
+  const g = cx.createLinearGradient(0,0,0,H*0.65);
+  g.addColorStop(0,   '#0a0818');
+  g.addColorStop(0.35,'#150d28');
+  g.addColorStop(0.65,'#2a1a0a');
+  g.addColorStop(1,   '#3a1e08');
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+
+  // Stars
+  stars.forEach(s => {
+    s.twinkle += s.speed;
+    const alpha = 0.3 + Math.sin(s.twinkle)*0.4;
+    cx.fillStyle = `rgba(255,240,200,${alpha})`;
+    cx.beginPath();
+    cx.arc(s.x*W, s.y*H*0.6, s.r*(devicePixelRatio||1), 0, Math.PI*2);
+    cx.fill();
+  });
+
+  // Glow behind logo area
+  const pulse = 0.8 + Math.sin(t*0.9)*0.2;
+  const glow = cx.createRadialGradient(W/2, H*0.3, 0, W/2, H*0.3, W*0.55);
+  glow.addColorStop(0,   `rgba(255,180,0,${0.07*pulse})`);
+  glow.addColorStop(0.5, `rgba(180,80,0,${0.04*pulse})`);
+  glow.addColorStop(1,   'transparent');
+  cx.fillStyle=glow; cx.fillRect(0,0,W,H);
+
+  // Ground / floor
+  const floorG = cx.createLinearGradient(0,H*0.72,0,H);
+  floorG.addColorStop(0,'#1a1420');
+  floorG.addColorStop(1,'#0d0b14');
+  cx.fillStyle=floorG; cx.fillRect(0,H*0.72,W,H*0.28);
+
+  // Silhouette buildings
+  const bldgs = [
+    {x:0.02, w:0.10, h:0.28, win:[[0.2,0.1],[0.6,0.1],[0.2,0.4],[0.6,0.4],[0.2,0.7],[0.6,0.7]]},
+    {x:0.13, w:0.07, h:0.22, win:[[0.3,0.15],[0.7,0.15],[0.3,0.5],[0.7,0.5]]},
+    {x:0.20, w:0.12, h:0.32, win:[[0.2,0.1],[0.5,0.1],[0.8,0.1],[0.2,0.3],[0.5,0.3],[0.8,0.3],[0.2,0.55],[0.5,0.55],[0.8,0.55]]},
+    {x:0.60, w:0.14, h:0.30, win:[[0.15,0.1],[0.5,0.1],[0.85,0.1],[0.15,0.35],[0.5,0.35],[0.85,0.35],[0.15,0.6],[0.5,0.6],[0.85,0.6]]},
+    {x:0.75, w:0.08, h:0.20, win:[[0.25,0.2],[0.75,0.2],[0.25,0.55],[0.75,0.55]]},
+    {x:0.84, w:0.11, h:0.26, win:[[0.2,0.12],[0.6,0.12],[0.2,0.4],[0.6,0.4],[0.2,0.68],[0.6,0.68]]},
+    {x:0.92, w:0.08, h:0.18, win:[[0.3,0.2],[0.7,0.2],[0.3,0.6]]},
+  ];
+
+  const baseY = H*0.72;
+  bldgs.forEach(b => {
+    const bx=W*b.x, bw=W*b.w, bh=H*b.h;
+    const by=baseY-bh;
+    cx.fillStyle='#0e0c1a';
+    cx.fillRect(bx, by, bw, bh+1);
+    // Windows
+    b.win.forEach(([wx,wy]) => {
+      const wx2=bx+bw*wx, wy2=by+bh*wy;
+      const ww=bw*0.18, wh=bh*0.12;
+      const flicker = Math.random() > 0.998; // rare flicker
+      const warmth = flicker ? 1 : 0.6+Math.sin(t*0.3+wx2)*0.4;
+      cx.fillStyle=`rgba(255,200,80,${warmth*0.55})`;
+      cx.fillRect(wx2-ww/2, wy2-wh/2, ww, wh);
+    });
+  });
+}
+
+function loop() {
+  t += 0.016;
+  drawBg();
+  requestAnimationFrame(loop);
+}
+loop();
+
+</script>
+
+<script>
+
+  const TRACKS = [
+    { src: 'Dick Stoter - Arnhemse vent.mp3',                              label: 'Arnhemse Vent' },
+    { src: 'DICK STOTER - rokjesdag.mp3',                                  label: 'Rokjesdag' },
+    { src: 'DICK STOTER - ranzige kille en bloedzuigende snol.mp3',        label: 'Ranzige Snol' },
+    { src: 'DICK STOTER - president dick is de baas.mp3',                  label: 'President Dick' },
+    { src: 'DICK STOTER - ghandi van de geiligheid.mp3',                   label: 'Ghandi vd Geiligheid' },
+    { src: 'DICK STOTER - daarom ben ik dick stoter.mp3',                  label: 'Daarom Ben Ik Dick' },
+    { src: 'DICK STOTER - sorry dat ik je wijf heb gepakt.mp3',            label: 'Sorry Dat Ik Je Wijf...' },
+  ];
+
+  const audio     = document.getElementById('bgMusic');
+  const muteBtn   = document.getElementById('muteBtn');
+  const volSlider = document.getElementById('volSlider');
+  const musicLabel= document.getElementById('musicLabel');
+
+  // Shuffle array
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length-1; i>0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  let playlist = shuffle(TRACKS);
+  let trackIdx = 0;
+  audio.volume = 0.6;
+
+  function loadTrack(idx) {
+    const t = playlist[idx];
+    audio.src = t.src;
+    musicLabel.textContent = '♪ ' + t.label;
+    audio.load();
+  }
+
+  function playNext() {
+    trackIdx = (trackIdx + 1) % playlist.length;
+    if (trackIdx === 0) playlist = shuffle(TRACKS);
+    loadTrack(trackIdx);
+    audio.play().catch(() => {});
+  }
+
+  function playPrev() {
+    trackIdx = (trackIdx - 1 + playlist.length) % playlist.length;
+    loadTrack(trackIdx);
+    audio.play().catch(() => {});
+  }
+
+  audio.addEventListener('ended', playNext);
+
+  loadTrack(0);
+
+  // Auto-play on first interaction (browser policy)
+  let started = false;
+  function tryStart() {
+    if (started) return;
+    started = true;
+    audio.play().catch(() => {});
+  }
+  document.addEventListener('click', tryStart, { once: true });
+  document.addEventListener('touchstart', tryStart, { once: true });
+  audio.play().then(() => { started = true; }).catch(() => {});
+
+  function toggleMute() {
+    audio.muted = !audio.muted;
+    muteBtn.textContent = audio.muted ? '🔇' : '🔊';
+    if (!started) tryStart();
+  }
+
+  function setVol(v) {
+    audio.volume = parseFloat(v);
+    audio.muted = false;
+    muteBtn.textContent = audio.volume === 0 ? '🔇' : '🔊';
+    volSlider.value = v;
+  }
+
+  function changeVol(delta) {
+    const newVol = Math.max(0, Math.min(1, audio.volume + delta));
+    setVol(newVol);
+    if (!started) tryStart();
+  }
+
+</script>
+<div id="ov" style="position:fixed;inset:0;z-index:9999;background:rgba(8,6,18,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Arial Black,Arial,sans-serif;">
+  <div style="font-size:clamp(40px,14vw,72px);margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(255,180,0,0.7))">🏅</div>
+  <div style="font-size:clamp(22px,6vw,38px);color:#ffd700;font-weight:900;line-height:1.15;text-shadow:0 0 20px rgba(255,200,0,0.6),3px 3px 0 #7a4000;margin-bottom:8px;">WELKOM BY DE<br>DICK-O-LYMPICS</div>
+  <div style="font-size:clamp(13px,3.5vw,18px);color:rgba(255,255,255,0.55);margin-bottom:36px;font-weight:normal;font-family:Arial,sans-serif;">de olympische spelen van Arnhem-Zuid</div>
+  <button id="startBtn" style="background:linear-gradient(135deg,#9a1c08,#6a0e04);border:2px solid rgba(255,100,50,0.5);border-radius:14px;color:#fff;font-family:Arial Black,Arial,sans-serif;font-size:clamp(16px,4.5vw,22px);font-weight:900;padding:clamp(14px,3.5vw,20px) clamp(28px,8vw,48px);cursor:pointer;box-shadow:0 4px 20px rgba(180,30,10,0.5);letter-spacing:0.05em;">🍺 Klik hier om te starten</button>
+</div>
+
+<script>
+  document.getElementById('startBtn').addEventListener('click', function() {
+    document.getElementById('ov').style.display = 'none';
+    document.getElementById('bgMusic').play().catch(function(){});
+    window.audioStarted = true;
+  });
+</script>
+</body>
+</html>
